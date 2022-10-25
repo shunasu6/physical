@@ -7,10 +7,8 @@
     <title>4.1 加速度センサ</title> 
 </head> 
 <body> 
-    <div id="timerLabel">00:00:00</div>
-    <button id="startBtn">START</button>
-    <button id="stopBtn">STOP</button>
-    <button id="resetBtn">RESET</button>
+    <div id="time">00:00:00</div>
+    
 
     <div id="msg">ここにデータ表示（iPhone はここを 1 回タップ）</div> 
     <canvas id="canvas" width="300" height="400"></canvas> <!-- 描画用の canvas --> 
@@ -118,6 +116,32 @@ class Enemy {
     }, 33); // 33 ミリ秒ごとに実行（約 30fps） 
 
 //ストップウォッチ
+const time = document.getElementById('time');
+
+// 開始時間
+let startTime;
+// 停止時間
+let stopTime = 0;
+// タイムアウトID
+let timeoutID;
+
+// 時間を表示する関数
+function displayTime() {
+  const currentTime = new Date(Date.now() - startTime + stopTime);
+  const h = String(currentTime.getHours()-1).padStart(2, '0');
+  const m = String(currentTime.getMinutes()).padStart(2, '0');
+  const s = String(currentTime.getSeconds()).padStart(2, '0');
+  const ms = String(currentTime.getMilliseconds()).padStart(3, '0');
+
+  time.textContent = `${h}:${m}:${s}.${ms}`;
+  timeoutID = setTimeout(displayTime, 10);
+}
+
+// スタートボタンがクリックされたら時間を進める
+  window.onload = function(){
+  startTime = Date.now();
+  displayTime();
+};
 
     </script>
 </body> 
