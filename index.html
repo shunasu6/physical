@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>4.1 加速度センサ</title> 
+</head> 
+<body> 
+    <div id="timerLabel">00:00:00</div>
+    <button id="startBtn">START</button>
+    <button id="stopBtn">STOP</button>
+    <button id="resetBtn">RESET</button>
+
+    <div id="msg">ここにデータ表示（iPhone はここを 1 回タップ）</div> 
+    <canvas id="canvas" width="300" height="400"></canvas> <!-- 描画用の canvas --> 
+    <script> 
+    let ax = 0, ay = 0, az = 0; // 加速度データを入れる変数を 3 個用意 
+    const msg = document.getElementById("msg"); // データを表示する div の取得 
+    // （iPhone 用）ユーザ操作で加速度データへのアクセスを許可させる 
+    msg.addEventListener("mousedown", () => { // div がタップされたら 
+    DeviceMotionEvent.requestPermission(); // 加速度データへのアクセス許可ダイアログを表示 
+    }); 
+    // 加速度センサの値が変化すると発生する devicemotion イベント 
+    window.addEventListener("devicemotion", (ret) => { 
+    // データの取得 
+    ax = ret.accelerationIncludingGravity.x; // x 軸の加速度 
+    ay = ret.accelerationIncludingGravity.y; // y 軸の加速度 
+    az = ret.accelerationIncludingGravity.z; // z 軸の加速度 
+    // iPhone(iOS)の場合に値の+/-を反転させる 
+    if (navigator.platform === "iPhone" || navigator.platform === "iPad") { 
+    ax *= -1, ay *= -1, az *= -1; 
+    } 
+    // データの表示 
+    msg.innerHTML = "x: " + ax + "<br>" // x 軸の値 
+    + "y: " + ay + "<br>" // z 軸の値 
+    + "z: " + az; // z 軸の値 
+    }); 
+    // 描画用 canvas の準備（canvas を使う場合に必ず必要な 2 行） 
+    const canvas = document.getElementById("canvas"); // canvas の取得 
+    const context = canvas.getContext("2d"); // context の取得 
+    // プレイヤー（画像オブジェクト）の準備 
+    const player = new Image(); // プレイヤー画像を入れる Image オブジェクト 
+    player.src = "rocket.png"; // 画像を読み込み 
+    let playerX = canvas.width / 2; // プレイヤーの X 座標（初期値は canvas の中央） 
+    let playerY = canvas.height / 2; // プレイヤーの Y 座標（初期値は canvas の中央） 
+    let playerSpeed = 2; // プレイヤーが動くスピード（適当な値） 
+
+// 敵（隕石）の準備 
+class Enemy { 
+ // コンストラクタ（生成時に実行される特別なメソッド） 
+ constructor() { 
+ this.x = Math.random() * 300; // X 座標 x を 0～300 でランダム化 ③ 
+ this.y = Math.random() * -400; // Y 座標 y を 0～-400 でランダム化 
+ this.r = Math.random() * 20 + 10; // 半径 r を 10～30 でランダム化 
+ this.s = Math.random() * 9 + 1; // スピード s を 1～10 でランダム化 
+ } 
+ // 敵の位置を更新して描画する，オリジナルのメソッド 
+ update() { 
+ this.y += this.s; // 位置を更新 
+ context.fillStyle = "#5c4138"; // 敵の色 
+ context.beginPath(); // 描画開始 
+ context.arc(this.x, this.y, this.r, 0, 2 * Math.PI); // 描画 
+ context.fill(); // 塗りつぶす 
+ } 
+ } 
+ // 敵を生成 
+ let enemy = []; // 敵を入れる配列変数を定義 
+ const enemyNum = 5; // 敵の数は 5 個と定義 
+ for (let i = 0; i < enemyNum; i++) { // 0 ～ enemuNum-1 まで繰り返し実行 ⑤ 
+ enemy[i] = new Enemy(); // 敵[i] を新しく生成する ⑥
+ }
+
+    // タイマーで一定間隔で描画する 
+    const timer = setInterval( () => { 
+    // プレイヤーの位置座標の更新 
+    playerX -= ax * playerSpeed; // playerX = playerX - ax * playerSpeed; の略記 
+    playerY += ay * playerSpeed; // playerY = playerY + ay * playerSpeed; の略記 
+
+        
+    if(playerX < 0){
+        playerX = 0;
+    }
+    if(playerX > canvas.width){
+        playerX = canvas.width;
+    }
+    if(playerY < 0){
+        playerY = 0;
+    }
+    if(playerY > canvas.height){
+        playerY = canvas.height;
+    }
+
+    // canvas 全体を消去 
+    context.clearRect(0, 0, canvas.width, canvas.height); 
+    // プレイヤーの描画 
+    context.drawImage(player, playerX - player.width / 2, playerY - player.height / 2); 
+    // 敵を動かす 
+ for (let i = 0; i < enemyNum; i++) { // 0 ～ enemuNum-1 まで繰り返し実行 ⑤ 
+ enemy[i].update(); // 敵[i] の位置を更新 
+ if (enemy[i].y > canvas.height) { // 敵[i] が canvas の下端より下だったら ⑦ 
+ enemy[i] = new Enemy(); // 敵[i] を新しく生成しなおす 
+ } 
+ // 衝突判定 
+ const dx = playerX - enemy[i].x; // プレイヤーと敵の横方向の距離 
+ const dy = playerY - enemy[i].y; // プレイヤーと敵の縦方向の距離 
+ const distance = Math.sqrt( dx**2 + dy**2 ); // プレイヤーと敵の中心間の距離 ① 
+ if (distance < (player.width/2 + enemy[i].r) ) { // 衝突していたら ① 
+ clearInterval(timer); // タイマー（つまり描画）を止める ② 
+ navigator.vibrate(1000); // バイブレータを 1000 ミリ秒振動させる ③ 
+ }
+ } 
+    }, 33); // 33 ミリ秒ごとに実行（約 30fps） 
+
+
+//ストップウォッチ
+'use strict';
+{   
+    var time = 0;
+    var timerLabel = document.getElementById('timerLabel');
+    var startBtn = document.getElementById('startBtn');
+    var stopBtn = document.getElementById('stopBtn');
+    var resetBtn = document.getElementById('resetBtn');
+    var id;  // setTimeoutから返される値を入れる変数
+
+    // STARTボタン
+    window.onload = function(){
+// ページ読み込み時に実行したい処理
+    //function start() {
+        // スタートボタンを押せないようにする（これをしないと何回もスタートボタン押せてしまう）
+        startBtn.disabled = true;
+        // timeをsetTimeoutで設定したミリ秒ごとに1プラスする
+        time++;  
+
+        //分・秒・ミリ秒を計算
+        var min = Math.floor(time/100/60)
+        var sec = Math.floor(time/100);
+        var mSec = time % 100;
+        // 分・秒・ミリ秒が１桁の場合は、先頭に０をつける
+        if (min < 10) min = '0' + min;
+        if (sec >= 60) sec = sec % 60; // 秒が60秒以上になった場合の処理（60になったら0になる）
+        if (sec < 10) sec = '0' + sec; 
+        if (mSec < 10) mSec = '0' + mSec;
+
+        // timerLabelを更新
+        timerLabel.innerHTML = min + ':' + sec + ':' + mSec;
+        // setTimeoutでstart関数をループさせるイメージ？
+        id = setTimeout(start, 10);
+    }
+
+    // STOPボタン
+    function stop() {
+        // 停止する
+        clearTimeout(id);
+        // スタートボタンを押せるようにする
+        startBtn.disabled = false;
+
+    }
+
+    // RESETボタン
+    function reset() {
+        // 停止する
+        clearTimeout(id);
+        // タイムを0に戻す
+        time = 0;
+        // タイマーラベルをリセット
+        timerLabel.innerHTML = '00:00:00';
+        // スタートボタンを押せるようにする
+        startBtn.disabled= false;
+    }
+
+    // クリックした時の処理
+    startBtn.addEventListener('click', start, false); // STARTボタン
+    stopBtn.addEventListener('click', stop, false); // STOPボタン
+    resetBtn.addEventListener('click', reset, false); // RESETボタン
+}
+
+
+ 
+    </script>
+</body> 
+</html>
