@@ -14,6 +14,8 @@
 
     <div id="msg">ここにデータ表示（iPhone はここを 1 回タップ）</div> 
     <canvas id="canvas" width="300" height="400"></canvas> <!-- 描画用の canvas --> 
+
+
     <script> 
     let ax = 0, ay = 0, az = 0; // 加速度データを入れる変数を 3 個用意 
     const msg = document.getElementById("msg"); // データを表示する div の取得 
@@ -107,76 +109,16 @@ class Enemy {
  const distance = Math.sqrt( dx**2 + dy**2 ); // プレイヤーと敵の中心間の距離 ① 
  if (distance < (player.width/2 + enemy[i].r) ) { // 衝突していたら ① 
  clearInterval(timer); // タイマー（つまり描画）を止める ② 
- navigator.vibrate(1000); // バイブレータを 1000 ミリ秒振動させる ③ 
+ navigator.vibrate(1000); // バイブレータを 1000 ミリ秒振動させる ③
+ //時間を止める
+ clearTimeout(timeoutID);
+  stopTime += (Date.now() - startTime);
  }
  } 
     }, 33); // 33 ミリ秒ごとに実行（約 30fps） 
 
-
 //ストップウォッチ
-'use strict';
-{   
-    var time = 0;
-    var timerLabel = document.getElementById('timerLabel');
-    var startBtn = document.getElementById('startBtn');
-    var stopBtn = document.getElementById('stopBtn');
-    var resetBtn = document.getElementById('resetBtn');
-    var id;  // setTimeoutから返される値を入れる変数
 
-    // STARTボタン
-    window.onload = function(){
-// ページ読み込み時に実行したい処理
-    //function start() {
-        // スタートボタンを押せないようにする（これをしないと何回もスタートボタン押せてしまう）
-        startBtn.disabled = true;
-        // timeをsetTimeoutで設定したミリ秒ごとに1プラスする
-        time++;  
-
-        //分・秒・ミリ秒を計算
-        var min = Math.floor(time/100/60)
-        var sec = Math.floor(time/100);
-        var mSec = time % 100;
-        // 分・秒・ミリ秒が１桁の場合は、先頭に０をつける
-        if (min < 10) min = '0' + min;
-        if (sec >= 60) sec = sec % 60; // 秒が60秒以上になった場合の処理（60になったら0になる）
-        if (sec < 10) sec = '0' + sec; 
-        if (mSec < 10) mSec = '0' + mSec;
-
-        // timerLabelを更新
-        timerLabel.innerHTML = min + ':' + sec + ':' + mSec;
-        // setTimeoutでstart関数をループさせるイメージ？
-        id = setTimeout(start, 10);
-    }
-
-    // STOPボタン
-    function stop() {
-        // 停止する
-        clearTimeout(id);
-        // スタートボタンを押せるようにする
-        startBtn.disabled = false;
-
-    }
-
-    // RESETボタン
-    function reset() {
-        // 停止する
-        clearTimeout(id);
-        // タイムを0に戻す
-        time = 0;
-        // タイマーラベルをリセット
-        timerLabel.innerHTML = '00:00:00';
-        // スタートボタンを押せるようにする
-        startBtn.disabled= false;
-    }
-
-    // クリックした時の処理
-    startBtn.addEventListener('click', start, false); // STARTボタン
-    stopBtn.addEventListener('click', stop, false); // STOPボタン
-    resetBtn.addEventListener('click', reset, false); // RESETボタン
-}
-
-
- 
     </script>
 </body> 
 </html>
