@@ -2,89 +2,74 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>5.3 CG モデルを登場させる</title> 
+    <title>5.2 アニメーションとインタラクション</title> 
 </head> 
 <body> 
-
  <!-- A-Frame ライブラリを読み込む --> 
  <script src="aframe.min.js"></script> 
-
  <!-- 3D 空間（シーン）を作る<a-scene>タグ --> 
  <a-scene> 
-
- <!-- 様々な部品を読み込んでおく a-assets タグ --> 
- <a-assets> 
- <img id="earth" src="earth.jpg"> 
- <img id="space" src="space.jpg"> 
- <a-asset-item id="model" src="huchan.gltf"></a-asset-item> 
- </a-assets> 
-
- <!-- gltf 形式の CG モデルを置く a-gltf-model タグ --> 
- <a-gltf-model id="huchan" src="#model" position="-1 0 -3"></a-gltf-model> 
- <!-- 球を置く a-sphere タグ --> 
- <a-sphere id="sphere" position="0 1.25 -5" radius="1.25" color="#FFFFFF" src="#earth"></a-sphere>
-
-
+    <img id="huchan" src="huchan.jpg"> 
+    <img id="earth" src="earth.jpg"> 
+    <img id="space" src="space.jpg"> 
+    </a-assets> 
     <!-- 直方体を置く a-box タグ --> 
     <a-box id="box" position="-1 0.5 -3" rotation="0 45 0" color="#C0C0C0" src="#huchan"></a-box> 
-    </a-sphere> 
+    <!-- 球を置く a-sphere タグ --> 
+    <a-sphere id="sphere" position="0 1.25 -5" radius="1.25" color="#FFFFFF" src="#earth"></a-sphere> 
     <!-- 空を作る a-sky タグ --> 
-    <a-sky color="#FFFFFF" src="#space"></a-sky>
+    <a-sky color="#FFFFFF" src="#space"></a-sky> 
+
     <!-- カメラを置く a-camera タグ --> 
+    <a-camera></a-camera>  
+
+ <!-- カメラを置く a-camera タグ --> 
  <a-camera> 
     <!-- 視線カーソル --> 
     <a-cursor color="#FF0000" fuse="true" fuse-timeout="500"></a-cursor> 
     </a-camera> 
-    </a-scene> 
+
  </a-scene> 
- 
+    
     <script> 
+    
     // 球のアニメーションの準備 
     const sphere = document.getElementById("sphere"); // a-sphere を取得 
     let sphere_ry = 0; // Y 軸回りの角度の変数 
+    
     // 箱のアニメーション・インタラクションの準備 
     const box = document.getElementById("box"); // a-box を取得 
     let box_rotation = false; // 箱を回すかどうか 
     let box_rx = 0; // 箱の X 軸回りの角度の変数 
     
-
-   ///// 3DCGのアニメーションの準備 
-    const model = document.getElementById("model"); // a-sphere を取得 
-    let model_ry = 0; // Y 軸回りの角度の変数 
-
-
     // 箱に視線カーソルが入ったら 
-      huchan.addEventListener("mouseenter", () => { 
-      huchan.setAttribute("scale", "1.2 1.2 1.2"); // 箱の大きさを 1.2 倍にする 
+    box.addEventListener("mouseenter", () => { 
+    box.setAttribute("scale", "1.2 1.2 1.2"); // 箱の大きさを 1.2 倍にする 
     }); 
+
     // 箱がクリックされたら（視線カーソルが一定時間以上あったら） 
     box.addEventListener("click", () => { 
     box_rotation = true; // 箱の回転を有効にする 
     }); 
     // 箱から視線カーソルが出たら 
-      huchan.addEventListener("mouseleave", () => { 
-      huchan.setAttribute("scale", "1 1 1"); // 箱の大きさを元に戻す 
+    box.addEventListener("mouseleave", () => { 
+    box.setAttribute("scale", "1 1 1"); // 箱の大きさを元に戻す 
     box_rotation = false; // 箱の回転を無効にする 
     }); 
-
+    
     // アニメーションさせるタイマー 
-    const timer = setInterval( () => 
-    { 
-      // 球のアニメーション 
-      sphere_ry += 0.5; // 角度を 0.5 度加算 
-      sphere.setAttribute("rotation", "0 " + sphere_ry + " 0"); // 球の回転を変更 
-      // 箱のアニメーション 
-      if (box_rotation) 
-      { // 箱の回転が有効なら 
-         box_rx += 5.0; // 角度を 5.0 度加算 
-         box.setAttribute("rotation", box_rx + " 45 0"); // 箱の回転を変更 
-      } 
-      /////3DCGのアニメーション 
-      model_ry += 3.5; // 角度を 0.5 度加算 
-      model.setAttribute("rotation", "0 " + model_ry + " 0"); // 球の回転を変更 
+    const timer = setInterval( () => { 
+    // 球のアニメーション 
+    sphere_ry += 0.5; // 角度を 0.5 度加算 
+    sphere.setAttribute("rotation", "0 " + sphere_ry + " 0"); // 球の回転を変更 
+    // 箱のアニメーション 
+    if (box_rotation) { // 箱の回転が有効なら 
+    box_rx += 5.0; // 角度を 5.0 度加算 
+    box.setAttribute("rotation", box_rx + " 45 0"); // 箱の回転を変更 
+    } 
     }, 33); 
 
-
     </script> 
-   </body> 
+   
+</body> 
    </html>
