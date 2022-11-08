@@ -66,7 +66,6 @@
     // 箱に視線カーソルが入ったら 
       huchan.addEventListener("mouseenter", () => { 
       huchan.setAttribute("scale", "1.2 1.2 1.2"); // 箱の大きさを 1.2 倍にする 
-      se.play();
     }); 
     // 箱がクリックされたら（視線カーソルが一定時間以上あったら） 
     huchan.addEventListener("click", () => { 
@@ -76,6 +75,7 @@
       huchan.addEventListener("mouseleave", () => { 
       huchan.setAttribute("scale", "1 1 1"); // 箱の大きさを元に戻す 
     box_rotation = false; // 箱の回転を無効にする 
+    se.play();
     }); 
 
     // アニメーションさせるタイマー 
