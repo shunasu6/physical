@@ -46,7 +46,7 @@
     let box_rotation = false; // 箱を回すかどうか 
     let box_rx = 0; // 箱の X 軸回りの角度の変数 
     
-    const se = new Audio("Galaxy.mp3");
+    const se = new Audio("se.mp3");
 
     ///// 3DCGのアニメーション・インタラクションの準備 
     const model = document.getElementById("model"); // a-box を取得 
@@ -70,7 +70,6 @@
     // 箱に視線カーソルが入ったら 
       huchan.addEventListener("mouseenter", () => { 
       huchan.setAttribute("scale", "1.2 1.2 1.2"); // 箱の大きさを 1.2 倍にする 
-      Galaxy.play(); 
     }); 
     // 箱がクリックされたら（視線カーソルが一定時間以上あったら） 
     box.addEventListener("click", () => { 
@@ -105,7 +104,10 @@
       model.setAttribute("rotation", "0 " + model_ry + " 0"); // 球の回転を変更 
     }, 33);
     */ 
-    
+    const timer = setInterval( () => {
+    se.currentTime = 0;
+    se.play(); 
+   }, 1000);
    })
     </script> 
 </body> 
