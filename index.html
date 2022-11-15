@@ -2,107 +2,43 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>5.3 CG モデルを登場させる</title> 
+    <title>6.3 Face to Face</title> 
+ <script src="/socket.io/socket.io.js"></script> <!-- socket.io の読み込み --> 
 </head> 
 <body> 
- <!-- A-Frame ライブラリを読み込む --> 
- <script src="aframe.min.js"></script> 
-
- <!-- 3D 空間（シーン）を作る<a-scene>タグ --> 
- <a-scene> 
-
- <!-- 様々な部品を読み込んでおく a-assets タグ --> 
- <a-assets> 
- <img id="earth" src="earth.jpg"> 
- <img id="space" src="space.jpg"> 
- <a-asset-item id="model" src="huchan.gltf"></a-asset-item> 
- </a-assets> 
-
- <!-- gltf 形式の CG モデルを置く a-gltf-model タグ --> 
- <a-gltf-model id="huchan" src="#model" position="-1 0 -3"></a-gltf-model> 
- <!-- 球を置く a-sphere タグ --> 
- <a-sphere id="sphere" position="0 1.25 -5" radius="1.25" color="#FFFFFF" src="#earth"></a-sphere>
-
-
-    <!-- 直方体を置く a-box タグ --> 
-    <a-box id="box" position="-1 0.5 -3" rotation="0 45 0" color="#C0C0C0" src="#huchan"></a-box> 
-    </a-sphere> 
-    <!-- 空を作る a-sky タグ --> 
-    <a-sky color="#FFFFFF" src="#space"></a-sky>
-    <!-- カメラを置く a-camera タグ --> 
- <a-camera> 
-    <!-- 視線カーソル --> 
-    <a-cursor color="#FF0000" fuse="true" fuse-timeout="500"></a-cursor> 
-    </a-camera> 
-    </a-scene> 
- </a-scene> 
- 
-    <script> 
-    // 球のアニメーションの準備 
-    const sphere = document.getElementById("sphere"); // a-sphere を取得 
-    let sphere_ry = 0; // Y 軸回りの角度の変数 
-    // 箱のアニメーション・インタラクションの準備 
-    const box = document.getElementById("box"); // a-box を取得 
-    let box_rotation = false; // 箱を回すかどうか 
-    let box_rx = 0; // 箱の X 軸回りの角度の変数 
-    
-    const se = new Audio("se.mp3");
-
-    ///// 3DCGのアニメーション・インタラクションの準備 
-    const model = document.getElementById("model"); // a-box を取得 
-    let model_rotation = false; // 箱を回すかどうか 
-    let model_ry = 0; // 箱の X 軸回りの角度の変数 
-
-    // 箱がクリックされたら（視線カーソルが一定時間以上あったら） 
-    model.addEventListener("click", () => { 
-    model_rotation = true; // 箱の回転を有効にする 
-    });  
-
-   ///// 3DCGのアニメーションの準備 
-    /*const model = document.getElementById("model"); // a-sphere を取得 
-    let model_ry = 0; // Y 軸回りの角度の変数 
-      */
-
-    // 箱に視線カーソルが入ったら 
-      huchan.addEventListener("mouseenter", () => { 
-      huchan.setAttribute("scale", "1.2 1.2 1.2"); // 箱の大きさを 1.2 倍にする 
-    }); 
-    // 箱がクリックされたら（視線カーソルが一定時間以上あったら） 
-    huchan.addEventListener("click", () => { 
-    huchan_rotation = true; // 箱の回転を有効にする 
-    }); 
-    // 箱から視線カーソルが出たら 
-      huchan.addEventListener("mouseleave", () => { 
-      huchan.setAttribute("scale", "1 1 1"); // 箱の大きさを元に戻す 
-    box_rotation = false; // 箱の回転を無効にする 
-    se.play();
-    }); 
-
-    // アニメーションさせるタイマー 
-    const timer = setInterval( () => 
-    { 
-      // 球のアニメーション 
-      sphere_ry += 0.5; // 角度を 0.5 度加算 
-      sphere.setAttribute("rotation", "0 " + sphere_ry + " 0"); // 球の回転を変更 
-      // 箱のアニメーション 
-      if (box_rotation) 
-      { // 箱の回転が有効なら 
-         box_rx += 5.0; // 角度を 5.0 度加算 
-         box.setAttribute("rotation", box_rx + " 45 0"); // 箱の回転を変更 
-      } 
-
-      if (model_rotation) 
-      { // 箱の回転が有効なら 
-         model_ry += 5.0; // 角度を 5.0 度加算 
-         model.setAttribute("rotation", "0 " + model_ry + " 0"); // 箱の回転を変更 
-      } 
-      /////3DCGのアニメーション 
-      /*model_ry += 3.5; // 角度を 0.5 度加算 
-      model.setAttribute("rotation", "0 " + model_ry + " 0"); // 球の回転を変更 
-    }, 33);
-    */ 
-    
-   })
-    </script> 
-</body> 
-</html>
+ <!-- 自分のカメラ映像を表示する video 要素（「3.4 My カメラアプリ」を参照） --> 
+ <video id="video" width="144" height="192" autoplay playsinline></video> 
+ <!-- 自分のカメラ映像をキャプチャする canvas 要素（非表示にしておく） --> 
+ <canvas id="local" width="144" height="192" style="display: none"></canvas> 
+ <!-- 相手のカメラ映像を表示する img 要素 --> 
+ <img id="remote" width="144" height="192"> 
+ <script> 
+ const socket = io(); // 双方向通信サーバに接続 
+ const video = document.getElementById("video"); // video の取得 
+ const local = document.getElementById("local"); // canvas の取得 
+ const context = local.getContext("2d"); // context の取得 
+ const remote = document.getElementById("remote"); // img の取得 
+ // カメラを使う（「3.4 My カメラアプリ」を参照） 
+ const media = navigator.mediaDevices.getUserMedia({ // メディアデバイスの取得 ① 
+ video: { facingMode: "user" }, // 映像（インカメラ）を使う 
+ audio: false // 音声（マイク）を使わない 
+ }); 
+  // メディアデバイスの準備ができた後の処理（「3.4 My カメラアプリ」を参照） 
+  media.then( (stream) => { 
+ video.srcObject = stream; // video にストリームを入れる ① 
+ // 映像を静止画として取得して socket で送る 
+ video.addEventListener("timeupdate", () => { // 映像フレームが更新されたら ③ 
+ context.drawImage(video, 0, 0, 144, 192); // 映像を canvas に描画 
+ const data = { // 送信するオブジェクトを作成 ④ 
+ pict: local.toDataURL() // pict 属性に canvas の内容を入れる 
+ }; 
+ socket.emit("others", data); // others という名で data を送る ⑤ 
+ }); 
+ }); 
+ // データの受信処理（相手側の画像の表示） 
+ socket.on("msg_others", (data) => { // msg_others という名の socket が来たら 
+ remote.src = data.pict; // img に相手側の画像を表示 ⑥
+ }); 
+ </script>
+ </body> 
+ </html>
